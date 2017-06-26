@@ -62,34 +62,35 @@ RatpackServer.start do |b|
       observables = items.split(",").map do |item|
         uri = java.net.URI.new(rest_url(item))
         http_client = ctx.get(HttpClient.java_class)
-        RxRatpack.observe(http_client.get(uri)).map do |response|
-          JSON.parse(response.get_body.get_text)["Item"]
-        end
+        RxRatpack.fork(
+          RxRatpack.observe(http_client.get(uri)).map do |response|
+            JSON.parse(response.get_body.get_text)["Item"]
+          end
+        )
       end
-
       initial = System.nano_time - start
 
-      start_then = System.nano_time
-      Observable.merge(*observables).to_list.subscribe do |results|
+      Observable.merge(observables).to_list.subscribe do |results|
+        start2 = System.nano_time
         thumbs = generate_thumbs(results.map{|r|r}.flatten)
 
-        now = System.nano_time
-        thread = now - start_then
-        total = now - start
-        generate = total - initial - thread
-
         ctx.get_response.get_headers.set("Content-Type", "text/html")
+
+        now = System.nano_time
+        total = now - start
+        generate = now - start2
+        thread = initial + generate
 
         ctx.render("<html><head>" +
           STYLE +
           "</head><body><small>" +
           "<b>Asynchronous: #{items}</b><br/>" +
           "Total Time: #{ms(total)}ms<br/>" +
-          "Thread held (<span class='red'>red</span>): #{ms(thread)}ms (#{ms(initial)} initial + #{ms(generate)} generate )<br/>" +
+          "Thread held (<span class='red'>red</span>): #{ms(thread)}ms(#{ms(initial)} initial + #{ms(generate)} generate )<br/>" +
           "Async wait (<span class='green'>green</span>): #{ms(total-thread)}ms<br/>" +
           "<img border='0px' src='images/red.png' height='20px' width='#{width(initial)}px'>" +
           "<img border='0px' src='images/green.png' height='20px' width='#{width(total-thread)}px'>" +
-          "<img border='0px' src='images/red.png'   height='20px' width='#{width(generate)}px'>" +
+          "<img border='0px' src='images/red.png' height='20px' width='#{width(generate)}px'>" +
           "<hr />" +
           thumbs +
           "</small>" +
