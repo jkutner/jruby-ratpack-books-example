@@ -9,6 +9,9 @@ require 'json'
 java_import 'ratpack.server.RatpackServer'
 java_import 'ratpack.server.BaseDir'
 java_import 'ratpack.http.client.HttpClient'
+java_import 'ratpack.rx.RxRatpack'
+java_import 'rx.Observable'
+java_import 'java.util.Collections'
 java_import 'java.lang.System'
 
 DEFAULT_APP_ID="Webtide81-adf4-4f0a-ad58-d91e41bbe85"
@@ -56,15 +59,42 @@ RatpackServer.start do |b|
       start = System.nano_time
 
       items = ctx.get_request.get_query_params["items"]
-      results =
-      items.split(",").each do |item|
-        uri = URI(rest_url(item))
-        http_client = ctx.get(HttpClient.class)
-        http_client.get(remoteApp.getAddress()).then do |response|
-
+      observables = items.split(",").map do |item|
+        uri = java.net.URI.new(rest_url(item))
+        http_client = ctx.get(HttpClient.java_class)
+        RxRatpack.observe(http_client.get(uri)).map do |response|
+          JSON.parse(response.get_body.get_text)["Item"]
         end
       end
-      thumbs = generate_thumbs(results)
+
+      initial = System.nano_time - start
+
+      start_then = System.nano_time
+      Observable.merge(*observables).to_list.subscribe do |results|
+        thumbs = generate_thumbs(results.map{|r|r}.flatten)
+
+        now = System.nano_time
+        thread = now - start_then
+        total = now - start
+        generate = total - initial - thread
+
+        ctx.get_response.get_headers.set("Content-Type", "text/html")
+
+        ctx.render("<html><head>" +
+          STYLE +
+          "</head><body><small>" +
+          "<b>Asynchronous: #{items}</b><br/>" +
+          "Total Time: #{ms(total)}ms<br/>" +
+          "Thread held (<span class='red'>red</span>): #{ms(thread)}ms (#{ms(initial)} initial + #{ms(generate)} generate )<br/>" +
+          "Async wait (<span class='green'>green</span>): #{ms(total-thread)}ms<br/>" +
+          "<img border='0px' src='images/red.png' height='20px' width='#{width(initial)}px'>" +
+          "<img border='0px' src='images/green.png' height='20px' width='#{width(total-thread)}px'>" +
+          "<img border='0px' src='images/red.png'   height='20px' width='#{width(generate)}px'>" +
+          "<hr />" +
+          thumbs +
+          "</small>" +
+          "</body></html>")
+      end
     end
 
     chain.get("sync") do |ctx|
