@@ -55,6 +55,10 @@ RatpackServer.start do |b|
   end
 
   b.handlers do |chain|
+    chain.get do |ctx|
+      ctx.redirect('/index.html')
+    end
+
     chain.get("async") do |ctx|
       start = System.nano_time
 
