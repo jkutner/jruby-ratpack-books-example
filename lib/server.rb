@@ -14,7 +14,7 @@ java_import 'rx.Observable'
 java_import 'java.util.Collections'
 java_import 'java.lang.System'
 
-DEFAULT_APP_ID="Webtide81-adf4-4f0a-ad58-d91e41bbe85"
+DEFAULT_APP_ID = ENV['EBAY_APP_ID']
 STYLE = "<style type='text/css'>"+
         "  img.thumb:hover {height:50px}"+
         "  img.thumb {vertical-align:text-top}"+
