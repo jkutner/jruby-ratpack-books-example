@@ -1,3 +1,4 @@
 bin/*
 .jbundler/*
 .bundler/*
+.env
