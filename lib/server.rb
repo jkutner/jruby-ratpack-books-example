@@ -90,7 +90,7 @@ RatpackServer.start do |b|
           "</head><body><small>" +
           "<b>Asynchronous: #{items}</b><br/>" +
           "Total Time: #{ms(total)}ms<br/>" +
-          "Thread held (<span class='red'>red</span>): #{ms(thread)}ms(#{ms(initial)} initial + #{ms(generate)} generate )<br/>" +
+          "Thread held (<span class='red'>red</span>): #{ms(thread)}ms (#{ms(initial)} initial + #{ms(generate)} generate )<br/>" +
           "Async wait (<span class='green'>green</span>): #{ms(total-thread)}ms<br/>" +
           "<img border='0px' src='images/red.png' height='20px' width='#{width(initial)}px'>" +
           "<img border='0px' src='images/green.png' height='20px' width='#{width(total-thread)}px'>" +
