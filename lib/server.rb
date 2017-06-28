@@ -9,8 +9,7 @@ require 'json'
 java_import 'ratpack.server.RatpackServer'
 java_import 'ratpack.server.BaseDir'
 java_import 'ratpack.http.client.HttpClient'
-java_import 'ratpack.rx.RxRatpack'
-java_import 'rx.Observable'
+java_import 'ratpack.exec.util.ParallelBatch'
 java_import 'java.util.Collections'
 java_import 'java.lang.System'
 
@@ -63,20 +62,22 @@ RatpackServer.start do |b|
       start = System.nano_time
 
       items = ctx.get_request.get_query_params["items"]
-      observables = items.split(",").map do |item|
+      results = Collections.synchronizedList([])
+      promises = items.split(",").map do |item|
         uri = java.net.URI.new(rest_url(item))
         http_client = ctx.get(HttpClient.java_class)
-        RxRatpack.fork(
-          RxRatpack.observe(http_client.get(uri)).map do |response|
-            JSON.parse(response.get_body.get_text)["Item"]
-          end
-        )
+        http_client.get(uri)
       end
+
+      operation = ParallelBatch.of(promises).for_each do |i, response|
+        results << JSON.parse(response.get_body.get_text)["Item"]
+      end
+
       initial = System.nano_time - start
 
-      Observable.merge(observables).to_list.subscribe do |results|
+      operation.then do
         start2 = System.nano_time
-        thumbs = generate_thumbs(results.map{|r|r}.flatten)
+        thumbs = generate_thumbs(results.to_a.flatten)
 
         ctx.get_response.get_headers.set("Content-Type", "text/html")
 
