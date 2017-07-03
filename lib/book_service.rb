@@ -5,35 +5,35 @@ java_import "com.netflix.hystrix.HystrixCommandGroupKey"
 java_import "ratpack.rx.RxRatpack"
 java_import "ratpack.exec.Blocking"
 
-module BookService
+require 'json'
 
-  @group_key = HystrixCommandGroupKey::Factory.as_key("sql-bookdb")
+require_relative "book_db_commands"
+require_relative "isbn_db_commands"
 
-  def self.all
-    s = HystrixObservableCommand::Setter.with_group_key(@group_key)
+class BookService
 
-    command = Class.new(HystrixObservableCommand) do
-      def construct
-        RxRatpack.observe_each(Blocking.get {
-          # sql.rows("select isbn, quantity, price from books order by isbn")
-          puts "test"
-          []
-        })
-      end
+  def initialize
+    @db = BookDbCommands.new
+    @isbn_db = IsbnDbCommands.new
+  end
 
-      def get_cache_key
-        "db-bookdb-all"
+  def all(ctx)
+    @db.all.flat_map do |row|
+      @isbn_db.get_book(ctx, row[:isbn]).map do |json|
+        row.merge(JSON.parse(json))
       end
     end
-
-    command.new(s).to_observable
   end
 
-  def self.find(isbn)
+  def insert(values)
+    @db.insert(values).map { values["isbn"] }
+  end
+
+  def find(isbn)
 
   end
 
-  def self.delete(isbn)
+  def delete(isbn)
 
   end
 
