@@ -95,10 +95,6 @@ RatpackServer.start do |b|
       end
     end
 
-    chain.files do |f|
-      f.dir("public")
-    end
-
     chain.get("hystrix.stream", HystrixMetricsEventStreamHandler.new)
   end
 end
