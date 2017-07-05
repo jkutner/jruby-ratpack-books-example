@@ -40,6 +40,29 @@ class BookDbCommands
     end.new(s).to_observable
   end
 
+  def find(isbn)
+    s = HystrixObservableCommand::Setter.
+      with_group_key(GROUP_KEY).
+      and_command_key(HystrixCommandKey::Factory.as_key("find"))
+
+    Class.new(HystrixObservableCommand) do
+      def initialize(setter, isbn)
+        super(setter)
+        @isbn = isbn
+      end
+
+      def construct
+        RxRatpack.observe_each(Blocking.get {
+          DB["select isbn, quantity, price from books where isbn = ?", @isbn].all
+        })
+      end
+
+      def get_cache_key
+        "db-bookdb-all"
+      end
+    end.new(s, isbn).to_observable
+  end
+
   def insert(values)
     s = HystrixObservableCommand::Setter.
       with_group_key(GROUP_KEY).
@@ -54,6 +77,30 @@ class BookDbCommands
       def construct
         RxRatpack.observe(Blocking.get {
           DB[:books].insert(@values)
+        })
+      end
+    end.new(s, values).to_observable
+  end
+
+  def update(values)
+    s = HystrixObservableCommand::Setter.
+      with_group_key(GROUP_KEY).
+      and_command_key(HystrixCommandKey::Factory.as_key("update"))
+
+    Class.new(HystrixObservableCommand) do
+      def initialize(setter, values)
+        super(setter)
+        @values = values
+      end
+
+      def construct
+        RxRatpack.observe(Blocking.get {
+          DB[
+            "update books set quantity = ?, price = ? where isbn = ?",
+            @values[:quantity],
+            @values[:price],
+            @values[:isbn],
+          ].update
         })
       end
     end.new(s, values).to_observable

@@ -4,6 +4,7 @@ java_import "com.netflix.hystrix.HystrixObservableCommand"
 java_import "com.netflix.hystrix.HystrixCommandGroupKey"
 java_import "ratpack.rx.RxRatpack"
 java_import "ratpack.exec.Blocking"
+java_import "rx.Observable"
 
 require 'json'
 
@@ -26,15 +27,24 @@ class BookService
   end
 
   def insert(values)
-    @db.insert(values).map { values["isbn"] }
+    @db.insert(values).map { values[:isbn] }
   end
 
-  def find(isbn)
+  def update(values)
+    @db.update(values).map { values[:isbn] }
+  end
 
+  def find(ctx, isbn)
+    Observable.zip(
+      @db.find(isbn),
+      @isbn_db.get_book(ctx, isbn)
+    ) do |row, json|
+      row.merge(JSON.parse(json))
+    end
   end
 
   def delete(isbn)
-
+    @db.delete(isbn).map { values[:isbn] }
   end
 
 end

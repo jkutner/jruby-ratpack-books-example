@@ -62,7 +62,10 @@ RatpackServer.start do |b|
 
         m.post do
           RxRatpack.observe(ctx.parse(Form.java_class)).flat_map do |form|
-            book_service.insert(isbn: form["isbn"], quantity: 42, price: 123.50)
+            book_service.insert(
+              isbn: form["isbn"],
+              quantity: form["quantity"].to_i,
+              price: form["price"].to_f)
           end.single.subscribe do |isbn|
             ctx.redirect "/?msg=Book+#{isbn}+created"
           end
@@ -71,29 +74,35 @@ RatpackServer.start do |b|
     end
 
     chain.path("update/:isbn") do |ctx|
-      isbn = c.path_tokens["isbn"]
+      isbn = ctx.path_tokens["isbn"]
 
-      book_service.find(isbn).single.subscribe do |book|
+      book_service.find(ctx, isbn).single.subscribe do |book|
         if book.nil?
           client_error(404)
         else
           ctx.by_method do |m|
             m.get do
-              ctx.render "update.html.erb"
+              render_erb(ctx, "update.html.erb", binding)
             end
             m.post do
-              # todo
-              ctx.redirect "/?msg=Book+#{isbn}+updated"
+              RxRatpack.observe(ctx.parse(Form.java_class)).flat_map do |form|
+                book_service.update(
+                  isbn: form["isbn"],
+                  quantity: form["quantity"].to_i,
+                  price: form["price"].to_f)
+              end.single.subscribe do |isbn|
+                ctx.redirect "/?msg=Book+#{isbn}+updated"
+              end
             end
           end
         end
       end
+    end
 
-      chain.delete("delete/:isbn") do |ctx|
-        isbn = c.path_tokens["isbn"]
-        book_service.delete(isbn).subscribe do
-          ctx.redirect "/?msg=Book+#{isbn}+deleted"
-        end
+    chain.delete("delete/:isbn") do |ctx|
+      isbn = c.path_tokens["isbn"]
+      book_service.delete(isbn).subscribe do
+        ctx.redirect "/?msg=Book+#{isbn}+deleted"
       end
     end
 

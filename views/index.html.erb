@@ -2,9 +2,33 @@
 
 <body>
   <h1>All Books</h1>
-  <% books.each do |book|%>
-    <p>Book: <%= book.inspect %></p>
-  <% end %>
+  <table>
+    <tr>
+      <th>Title</th>
+      <th>Author</th>
+      <th>ISBN</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th />
+    </tr>
+    <% books.each do |book|%>
+      <tr>
+        <% if book["error"] %>
+          <td>Unknown</td>
+          <td>Unknown</td>
+        <% else %>
+          <td><%= book["data"][0]["title"] %></td>
+          <td>
+            <%= book["data"][0]["author_data"].map{|a| a["name"]}.join(", ") %>
+          </td>
+        <% end %>
+        <td><%= book[:isbn] %></td>
+        <td><%= book[:quantity] %></td>
+        <td><%= book[:price] %></td>
+        <td><a href="update/<%= book[:isbn] %>">Edit</a> | <a href="delete">Delete</a></td>
+      </tr>
+    <% end %>
+  </table>
   <p>
     <a href="create">Create Book</a>
   </p>

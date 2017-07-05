@@ -29,7 +29,6 @@ class IsbnDbCommands
 
       def construct
         uri = java.net.URI.new("#{HOST}/api/v2/json/#{KEY}/book/#{@isbn}")
-        puts "uri: #{uri}"
         RxRatpack.observe(@http_client.get(uri)).map do |resp|
           if resp.body.text.include?("Daily request limit exceeded")
             raise "ISBNDB daily request limit exceeded."
@@ -38,8 +37,8 @@ class IsbnDbCommands
         end
       end
 
-      def resume_with_fallback
-        Observable.just('{"data" : [{"title" : "Groovy in Action", "publisher_name" : "Manning Publications", "author_data" : [{"id" : "dierk_koenig", "name" : "Dierk Koenig"}]}]}')
+      def resumeWithFallback
+        Observable.just('{"error" : "Timeout"}')
       end
 
       def get_cache_key

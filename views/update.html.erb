@@ -1,0 +1,18 @@
+<html>
+
+<body>
+  <h1>Update Book</h1>
+  <form method="POST" action="/update/<%= book[:isbn] %>">
+    <label for="isbn">ISBN</label>
+    <input id="isbn" type="text" name="isbn" value="<%= book[:isbn] %>" readonly></input>
+    <br/>
+    <label for="quantity">Quantity</label>
+    <input id="quantity" type="text" name="quantity" value="<%= book[:quantity] %>"></input>
+    <br/>
+    <label for="price">Price</label>
+    <input id="price" type="text" name="price" value="<%= book[:price] %>"></input>
+    <br/>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>
