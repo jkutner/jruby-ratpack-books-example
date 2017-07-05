@@ -105,4 +105,23 @@ class BookDbCommands
       end
     end.new(s, values).to_observable
   end
+
+  def delete(isbn)
+    s = HystrixObservableCommand::Setter.
+      with_group_key(GROUP_KEY).
+      and_command_key(HystrixCommandKey::Factory.as_key("delete"))
+
+    Class.new(HystrixObservableCommand) do
+      def initialize(setter, isbn)
+        super(setter)
+        @isbn = isbn
+      end
+
+      def construct
+        RxRatpack.observe(Blocking.get {
+          DB["delete from books where isbn = ?", @isbn].delete
+        })
+      end
+    end.new(s, isbn).to_observable
+  end
 end

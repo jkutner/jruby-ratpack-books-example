@@ -99,8 +99,8 @@ RatpackServer.start do |b|
       end
     end
 
-    chain.delete("delete/:isbn") do |ctx|
-      isbn = c.path_tokens["isbn"]
+    chain.post("delete/:isbn") do |ctx|
+      isbn = ctx.path_tokens["isbn"]
       book_service.delete(isbn).subscribe do
         ctx.redirect "/?msg=Book+#{isbn}+deleted"
       end
