@@ -25,8 +25,6 @@ def render_erb(ctx, template_file, b=binding)
 end
 
 RatpackServer.start do |b|
-  # RxRatpack.initialize
-
   b.server_config do |s|
     s.baseDir(BaseDir.find())
   end
@@ -34,15 +32,6 @@ RatpackServer.start do |b|
   b.registry(Guice.registry do |bindings|
     bindings.module SessionModule.java_class
     bindings.module HystrixModule.new.sse
-    # bindings.bind_instance(Service.java_class, Class.new do
-    #   include Service
-    #
-    #   java_signature 'void onStart(ratpack.service.StartEvent)'
-    #   def on_start(event)
-    #     puts "Initializing RX"
-    #     RxRatpack.initialize
-    #   end
-    # end.new)
   end)
 
   b.handlers do |chain|

@@ -1,5 +1,3 @@
-java_import "com.google.inject.AbstractModule"
-java_import "com.google.inject.Scopes"
 java_import "com.netflix.hystrix.HystrixObservableCommand"
 java_import "com.netflix.hystrix.HystrixCommandGroupKey"
 java_import "com.netflix.hystrix.HystrixCommandKey"

@@ -1,13 +1,6 @@
-java_import "com.google.inject.AbstractModule"
-java_import "com.google.inject.Scopes"
-java_import "com.netflix.hystrix.HystrixObservableCommand"
-java_import "com.netflix.hystrix.HystrixCommandGroupKey"
-java_import "ratpack.rx.RxRatpack"
-java_import "ratpack.exec.Blocking"
 java_import "rx.Observable"
 
 require 'json'
-
 require_relative "book_db_commands"
 require_relative "isbn_db_commands"
 
@@ -44,7 +37,7 @@ class BookService
   end
 
   def delete(isbn)
-    @db.delete(isbn).map { values[:isbn] }
+    @db.delete(isbn).map { isbn }
   end
 
 end
