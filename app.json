@@ -3,9 +3,8 @@
   "description": "A an application that demonstrats async IO with Ratpack and JRuby",
   "repository": "https://github.com/jkutner/jruby-ratpack-books-example",
   "keywords": ["jruby", "ratpack" ],
-  "addons": [ "heroku-postgresql" ],
   "env": {
-    "EB_ISBNDB__APIKEY": {
+    "ISBN_KEY": {
       "description": "Your API key for ISBNdb. You can create an account at http://isbndb.com/account"
     }
   }
