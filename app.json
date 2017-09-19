@@ -1,0 +1,7 @@
+{
+  "name": "Ratpack JRuby Example",
+  "description": "A an application that demonstrats async IO with Ratpack and JRuby",
+  "repository": "https://github.com/jkutner/jruby-ratpack-books-example",
+  "keywords": ["jruby", "ratpack" ],
+  "addons": [ "heroku-postgresql" ]
+}
