@@ -4,6 +4,10 @@
   "repository": "https://github.com/jkutner/jruby-ratpack-books-example",
   "keywords": ["jruby", "ratpack" ],
   "addons": [ "heroku-postgresql" ],
+  "buildpacks": [
+    { "url": "heroku/jvm" },
+    { "url": "heroku/ruby" }
+  ],
   "env": {
     "ISBN_KEY": {
       "description": "Your API key for ISBNdb. You can create an account at http://isbndb.com/account"
